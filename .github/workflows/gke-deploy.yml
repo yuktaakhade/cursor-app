@@ -1,1 +1,0 @@
-# This workflow is now redundant and has been removed. All build, push, and deploy steps are handled in python-app.yml and gke-cicd.yaml. 

@@ -1,6 +1,8 @@
 name: CI/CD to GKE
 
 on:
+  push:
+    branches: [main]
   workflow_run:
     workflows: ["Provision GCP Infra with Terraform"]
     types:

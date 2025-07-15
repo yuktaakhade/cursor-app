@@ -1,10 +1,10 @@
-name: 'Provision GCP Infra with Terraform'
+name: CI/CD to GKE
 
 on:
-  push:
-    paths:
-      - 'terraform/**'
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Provision GCP Infra with Terraform"]
+    types:
+      - completed
 
 jobs:
   terraform:
