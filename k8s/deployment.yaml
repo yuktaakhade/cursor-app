@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eshop-app
+  namespace: eshop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eshop-app
+  template:
+    metadata:
+      labels:
+        app: eshop-app
+    spec:
+      containers:
+      - name: eshop-app
+        image: <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPO_NAME>/eshop:latest
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: eshop-config
+        - secretRef:
+            name: eshop-secret
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "250m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20 

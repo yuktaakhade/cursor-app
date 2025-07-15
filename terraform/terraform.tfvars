@@ -1,0 +1,7 @@
+project_id   = "yukta-2"
+region       = "us-central1"
+db_user      = "user1"
+db_password = "root"
+github_org   = "yuktaakhade"
+github_repo  = "e-shopping-python"
+artifact_repo_name = "e-shopping-docker-repo" 

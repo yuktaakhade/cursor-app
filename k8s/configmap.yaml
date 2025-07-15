@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eshop-config
+  namespace: eshop
+data:
+  FLASK_ENV: "production"
+  # Add other non-secret env vars here 

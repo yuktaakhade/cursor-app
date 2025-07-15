@@ -1,0 +1,57 @@
+name: 'Build and Deploy to GKE'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
+      GOOGLE_PROJECT: ${{ secrets.GCP_PROJECT }}
+      GOOGLE_REGION: ${{ secrets.GCP_REGION }}
+      GAR_REPO: ${{ secrets.GAR_REPO }}
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
+          service_account: '${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GAR_REPO }}-docker.pkg.dev
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials e-shopping-cluster --region ${{ secrets.GCP_REGION }} --project ${{ secrets.GCP_PROJECT }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.GAR_REPO }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.GAR_REPO }}/e-shopping-python:${{ github.sha }} .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.GAR_REPO }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.GAR_REPO }}/e-shopping-python:${{ github.sha }}
+
+      - name: Update deployment manifest image
+        run: |
+          sed -i 's|image:.*|image: ${{ env.GAR_REPO }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.GAR_REPO }}/e-shopping-python:${{ github.sha }}|' k8s/deployment.yaml
+
+      - name: Deploy to GKE
+        run: |
+          kubectl apply -f k8s/ 
