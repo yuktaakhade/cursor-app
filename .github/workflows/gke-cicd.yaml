@@ -32,6 +32,7 @@ jobs:
       with:
         workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
         service_account: '${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}'
+        
 
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
