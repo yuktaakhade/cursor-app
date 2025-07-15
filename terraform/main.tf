@@ -2,6 +2,10 @@ module "vpc" {
   source     = "./modules/vpc"
   project_id = var.project_id
   region     = var.region
+  labels     = {
+    environment = terraform.workspace
+    owner       = "eshop-team"
+  }
 }
 
 module "sql" {

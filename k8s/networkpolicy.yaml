@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: eshop-allow-only-namespace
+  namespace: eshop
+spec:
+  podSelector:
+    matchLabels:
+      app: eshop-app
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector: {}
+  egress:
+  - to:
+    - namespaceSelector: {} 

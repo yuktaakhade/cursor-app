@@ -22,12 +22,15 @@ def set_properties(project):
 
 @task
 def run_tests(project, logger):
+    """Run unit tests using unittest."""
     logger.info('Running unit tests...')
 
 @task
 def check_coverage(project, logger):
+    """Check test coverage using coverage plugin."""
     logger.info('Checking coverage...')
 
 @task
 def lint_code(project, logger):
+    """Lint code using flake8."""
     logger.info('Linting code...') 

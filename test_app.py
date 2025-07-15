@@ -5,6 +5,7 @@ from models import Product
 
 class ProductApiTestCase(unittest.TestCase):
     def setUp(self):
+        """Set up a test client and initialize the in-memory database."""
         self.app = create_app()
         self.app.config['TESTING'] = True
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -13,11 +14,13 @@ class ProductApiTestCase(unittest.TestCase):
             db.create_all()
 
     def tearDown(self):
+        """Tear down the test database."""
         with self.app.app_context():
             db.session.remove()
             db.drop_all()
 
     def test_create_product(self):
+        """Test creating a new product via POST /products."""
         response = self.client.post('/products', json={
             'name': 'Test Product',
             'price': 9.99,
@@ -28,6 +31,7 @@ class ProductApiTestCase(unittest.TestCase):
         self.assertEqual(data['name'], 'Test Product')
 
     def test_get_products(self):
+        """Test retrieving products via GET /products."""
         with self.app.app_context():
             db.session.add(Product(name='P1', price=1.0))  # type: ignore
             db.session.commit()
@@ -38,6 +42,7 @@ class ProductApiTestCase(unittest.TestCase):
         self.assertGreaterEqual(len(data), 1)
 
     def test_update_product(self):
+        """Test updating a product via PUT /products/<id>."""
         with self.app.app_context():
             p = Product(name='P2', price=2.0)  # type: ignore
             db.session.add(p)
@@ -50,6 +55,7 @@ class ProductApiTestCase(unittest.TestCase):
         self.assertEqual(data['price'], 3.0)
 
     def test_delete_product(self):
+        """Test deleting a product via DELETE /products/<id>."""
         with self.app.app_context():
             p = Product(name='P3', price=3.0)  # type: ignore
             db.session.add(p)

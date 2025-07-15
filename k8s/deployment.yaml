@@ -16,8 +16,16 @@ spec:
       containers:
       - name: eshop-app
         image: <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPO_NAME>/eshop:latest
+        imagePullPolicy: IfNotPresent  # Use Always for CI/CD or production
         ports:
         - containerPort: 5000
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
         envFrom:
         - configMapRef:
             name: eshop-config

@@ -1,5 +1,7 @@
-Flask
-Flask-SQLAlchemy
-coverage
-flake8
-pybuilder 
+Flask==2.3.2
+Flask-SQLAlchemy==3.0.5
+# Production dependencies above
+# Development dependencies (install separately or use requirements-dev.txt):
+coverage==7.2.7
+flake8==6.1.0
+pybuilder==0.13.12 
