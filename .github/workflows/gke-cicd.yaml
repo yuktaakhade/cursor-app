@@ -8,6 +8,8 @@ on:
     types:
       - completed
 
+
+      
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GAR_LOCATION: us-central1
