@@ -41,4 +41,4 @@ A simple Flask-based backend for an e-shopping system with CRUD operations for p
 6. **Build automation (PyBuilder):**
    ```bash
    pyb clean install
-   ``` 
+   ``` # cursor-app
