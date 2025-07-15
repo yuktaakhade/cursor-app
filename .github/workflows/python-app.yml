@@ -6,10 +6,10 @@
 name: Python application CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["Provision GCP Infra with Terraform"]
+    types:
+      - completed
 
 permissions:
   id-token: write
@@ -17,95 +17,27 @@ permissions:
 
 env:
   REGION: us-central1
-  REPOSITORY: e-shopping-python-repo
-  IMAGE_NAME: e-shopping-python-image
-  IMAGE_TAG: latest
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
   SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
 
-
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-
     - name: Run tests
       run: python -m unittest test_app.py
-
     - name: Check coverage
       run: |
         pip install coverage
         coverage run --source=. -m unittest test_app.py
-        coverage report -m
-
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        token_format: 'access_token'
-        workload_identity_provider: ${{ env.WIF_PROVIDER }}
-        service_account: ${{ env.SERVICE_ACCOUNT }}
-
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
-
-    - name: Configure Docker for Artifact Registry
-      run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
-
-    - name: Build Docker image
-      env:
-        ARTIFACT_REGISTRY: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-      run: docker build -t $ARTIFACT_REGISTRY .
-
-    - name: Push Docker image
-      env:
-        ARTIFACT_REGISTRY: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-      run: docker push $ARTIFACT_REGISTRY 
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.SERVICE_ACCOUNT }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-
-      - name: Get GKE credentials
-        run: |
-          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER_NAME }} --region ${{ env.REGION }} --project ${{ env.GCP_PROJECT_ID }}
-
-      - name: Set image in deployment manifest
-        run: |
-          sed -i "s|<REGION>-docker.pkg.dev/<PROJECT_ID>/<REPO_NAME>/eshop:latest|${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}|g" k8s/deployment.yaml
-
-      - name: Deploy to GKE
-        run: |
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/secret.yaml
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/ingress.yaml
-          kubectl apply -f k8s/hpa.yaml 
+        coverage report -m 

@@ -1,10 +1,10 @@
 name: 'Provision GCP Infra with Terraform'
 
 on:
-  workflow_dispatch:
   push:
     paths:
       - 'terraform/**'
+  workflow_dispatch:
 
 jobs:
   terraform:
@@ -18,29 +18,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
           service_account: '${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}'
-
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.7
-
       - name: Terraform Init
         working-directory: ./terraform
         run: terraform init
-
       - name: Terraform Plan
         working-directory: ./terraform
         run: terraform plan
-
       - name: Terraform Apply
         working-directory: ./terraform
-        run: terraform apply -auto-approve 
+        run: terraform apply -auto-approve
+      # Cost-effective tip: Use 'terraform destroy' for unused resources and review plan before apply. 
