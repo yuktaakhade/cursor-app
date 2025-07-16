@@ -10,7 +10,6 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     env:
-      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
       GOOGLE_PROJECT: ${{ secrets.GCP_PROJECT }}
       GOOGLE_REGION: ${{ secrets.GCP_REGION }}
     permissions:
