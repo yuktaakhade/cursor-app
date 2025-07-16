@@ -1,15 +1,16 @@
 # GitHub Actions CI/CD Workflow Documentation
 
 ## Overview
-This repository uses GitHub Actions for a cost-effective, best-practice CI/CD pipeline to deploy a Python application to Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP).
+This repository uses GitHub Actions for a secure, automated CI/CD pipeline to deploy a Python application to Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP), with all infrastructure provisioned by Terraform.
 
 ## Workflow Sequence
 Workflows are designed to run sequentially, ensuring infrastructure is provisioned before testing and deployment. Each workflow is focused and avoids redundant steps.
 
 ### 1. Provision GCP Infrastructure
 - **Workflow:** `terraform-infra.yml`
-- **Trigger:** On push to `terraform/**` or manual dispatch
+- **Trigger:** On push to `main` or manual dispatch
 - **Purpose:** Provisions all required GCP resources (including GKE cluster, Artifact Registry, etc.) using Terraform.
+- **Authentication:** Uses Workload Identity Federation (no service account keys)
 - **Best Practices:**
   - Only necessary resources are created.
   - Use `terraform destroy` for unused resources to save costs.
@@ -22,7 +23,8 @@ Workflows are designed to run sequentially, ensuring infrastructure is provision
   - Checks out the code
   - Sets up Python and installs dependencies
   - Runs unit tests and code coverage
-  - Authenticates to GCP
+  - Authenticates to GCP (Workload Identity Federation)
+  - Waits for the GKE cluster to be ready
   - Deploys the application to GKE using a rolling update (only if all tests pass)
 - **Best Practices:**
   - Only tested code is deployed
@@ -33,6 +35,10 @@ Workflows are designed to run sequentially, ensuring infrastructure is provision
 - Workflows are focused and do not repeat steps, minimizing CI minutes and cloud resource usage.
 - HPA and resource limits in Kubernetes help control GKE costs.
 - Unused resources should be destroyed via Terraform to avoid unnecessary charges.
+
+## Security
+- Uses Workload Identity Federation for authentication (no static service account keys)
+- All secrets are managed via GitHub repository secrets
 
 ## Maintenance Tips
 - Update secrets in GitHub repository settings as needed.
