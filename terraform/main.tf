@@ -38,4 +38,13 @@ module "service_account" {
   workload_identity_pool = module.workload_identity.eshop_github_pool_id
   github_org             = var.github_org
   github_repo            = var.github_repo
+}
+
+module "gke" {
+  source       = "./modules/gke"
+  project_id   = var.project_id
+  location     = var.region
+  network      = module.vpc.network_name
+  subnetwork   = module.vpc.subnet_name
+  cluster_name = "e-shopping-cluster"
 } 
