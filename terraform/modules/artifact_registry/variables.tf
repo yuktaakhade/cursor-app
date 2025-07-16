@@ -1,6 +1,14 @@
-variable "project_id" {}
-variable "region" {}
+variable "project_id" {
+  description = "The GCP project ID"
+  type        = string
+}
+
+variable "region" {
+  description = "The region for the Artifact Registry"
+  type        = string
+}
+
 variable "repo_name" {
-  description = "Name of the Artifact Registry repository"
-  default     = "eshop-docker-repo"
+  description = "The name of the Artifact Registry repository"
+  type        = string
 } 
