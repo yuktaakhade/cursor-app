@@ -1,8 +1,6 @@
 name: CI/CD to GKE
 
 on:
-  push:
-    branches: [main]
   workflow_run:
     workflows: ["Provision GCP Infra with Terraform"]
     types:
@@ -43,19 +41,27 @@ jobs:
         coverage run --source=. -m unittest test_app.py
         coverage report -m
 
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-      with:
-        project_id: ${{ env.PROJECT_ID }}
-    - id: 'auth'
-      uses: 'google-github-actions/auth@v2'
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
         workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
         service_account: '${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}'
-        
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+    - name: Wait for GKE cluster to be ready
+      run: |
+        for i in {1..10}; do
+          if gcloud container clusters describe $CLUSTER_NAME --region $CLUSTER_LOCATION; then
+            echo "Cluster is ready!"
+            break
+          else
+            echo "Waiting for cluster to be ready..."
+            sleep 30
+          fi
+        done
     - name: Get GKE credentials
       run: gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_LOCATION
-    - name: Deploy to GKE (rolling update, cost-effective)
+    - name: Deploy to GKE
       run: |
         kubectl apply -f k8s/namespace.yaml
         kubectl apply -f k8s/configmap.yaml
@@ -64,5 +70,4 @@ jobs:
         kubectl apply -f k8s/service.yaml
         kubectl apply -f k8s/ingress.yaml
         kubectl apply -f k8s/hpa.yaml
-        kubectl rollout status deployment/eshop-app -n eshop
-      # Cost-effective tip: Ensure resource requests/limits are set in deployment.yaml and HPA is enabled to avoid over-provisioning. 
+        kubectl rollout status deployment/eshop-app -n eshop 
