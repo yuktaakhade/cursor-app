@@ -41,6 +41,7 @@ jobs:
         pip install coverage
         coverage run --source=. -m unittest test_app.py
         coverage report -m
+
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
       with:
@@ -50,6 +51,7 @@ jobs:
       with:
         workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
         service_account: '${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}'
+        
     - name: Get GKE credentials
       run: gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_LOCATION
     - name: Deploy to GKE (rolling update, cost-effective)
