@@ -18,7 +18,6 @@ env:
   CLUSTER_NAME: e-shopping-cluster
   CLUSTER_LOCATION: us-central1-c
   
-
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
