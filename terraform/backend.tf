@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket  = "<your-tf-state-bucket>"
+    bucket  = "eshop-tf-state-yukta2"
     prefix  = "eshop/terraform/state"
   }
 } 
