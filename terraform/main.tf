@@ -1,6 +1,7 @@
 locals {
   region     = var.region
   project_id = var.project_id
+  github_actions_sa_email = "e-shopping-sa@yukta-2.iam.gserviceaccount.com"
 }
 
 module "vpc" {
@@ -50,11 +51,6 @@ resource "google_artifact_registry_repository" "docker_repo" {
   depends_on    = [google_project_service.services]
 }
 
-resource "google_service_account" "github_actions" {
-  account_id   = "github-actions-cicd"
-  display_name = "GitHub Actions CI/CD Service Account"
-}
-
 resource "google_project_iam_member" "github_actions_roles" {
   for_each = toset([
     "roles/artifactregistry.writer",
@@ -62,7 +58,7 @@ resource "google_project_iam_member" "github_actions_roles" {
   ])
   project = local.project_id
   role    = each.key
-  member  = "serviceAccount:${google_service_account.github_actions.email}"
+  member  = "serviceAccount:${local.github_actions_sa_email}"
 }
 
 output "gke_endpoint" {
@@ -82,5 +78,5 @@ output "artifact_registry_repo" {
 }
 
 output "github_actions_service_account_email" {
-  value = google_service_account.github_actions.email
+  value = local.github_actions_sa_email
 } 
