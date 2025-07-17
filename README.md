@@ -42,3 +42,20 @@ A simple Flask-based backend for an e-shopping system with CRUD operations for p
    ```bash
    pyb clean install
    ``` # cursor-app
+
+## Infrastructure as Code: Terraform for GKE on GCP
+
+Terraform scripts for provisioning a cost-effective, production-ready GKE cluster are located in the `terraform/` directory. These scripts follow GCP and Terraform best practices, use proper naming conventions, and are optimized for cost (Autopilot mode, minimal IAM, custom VPC, etc.).
+
+### Usage
+1. Update variables as needed in `terraform/variables.tf` or via CLI flags.
+2. Initialize and apply:
+   ```sh
+   cd terraform
+   terraform init
+   terraform plan -var="project_id=YOUR_PROJECT_ID"
+   terraform apply -var="project_id=YOUR_PROJECT_ID"
+   ```
+3. Deploy your application to the created GKE cluster.
+
+---

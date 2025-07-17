@@ -1,19 +1,21 @@
 name: CI/CD to GKE
 
 on:
-  workflow_run:
-    workflows: ["Provision GCP Infra with Terraform"]
-    types:
-      - completed
-      
+  push:
+    branches: [main]
+  workflow_dispatch:
+
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GAR_LOCATION: us-central1
-  REPOSITORY: eshop-docker-repo
-  IMAGE: eshop
-  CLUSTER_NAME: e-shopping-cluster
-  CLUSTER_LOCATION: us-central1-c
-  
+  REPOSITORY: gke-docker-repo
+  IMAGE: python-app
+  CLUSTER_NAME: gke-cluster
+  CLUSTER_LOCATION: us-central1
+  DEPLOYMENT_NAME: python-app
+  NAMESPACE: default
+  IMAGE_PATH: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gke-docker-repo/python-app:latest
+
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
@@ -22,27 +24,21 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-      
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
     - name: Run unit tests
       run: python -m unittest test_app.py
-
-      
     - name: Check coverage
       run: |
         pip install coverage
         coverage run --source=. -m unittest test_app.py
         coverage report -m
-
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
@@ -50,6 +46,15 @@ jobs:
         service_account: '${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}'
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
+    - name: Configure Docker for Artifact Registry
+      run: |
+        gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
+    - name: Build Docker image
+      run: |
+        docker build -t $IMAGE_PATH .
+    - name: Push Docker image
+      run: |
+        docker push $IMAGE_PATH
     - name: Wait for GKE cluster to be ready
       run: |
         for i in {1..10}; do
@@ -65,11 +70,11 @@ jobs:
       run: gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_LOCATION
     - name: Deploy to GKE
       run: |
-        kubectl apply -f k8s/namespace.yaml
         kubectl apply -f k8s/configmap.yaml
         kubectl apply -f k8s/secret.yaml
         kubectl apply -f k8s/deployment.yaml
         kubectl apply -f k8s/service.yaml
         kubectl apply -f k8s/ingress.yaml
         kubectl apply -f k8s/hpa.yaml
-        kubectl rollout status deployment/eshop-app -n eshop 
+        kubectl set image deployment/$DEPLOYMENT_NAME $DEPLOYMENT_NAME=$IMAGE_PATH -n $NAMESPACE
+        kubectl rollout status deployment/$DEPLOYMENT_NAME -n $NAMESPACE 

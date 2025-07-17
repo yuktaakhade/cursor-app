@@ -1,20 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: eshop-ingress
-  namespace: eshop
+  name: python-app-ingress
   annotations:
     kubernetes.io/ingress.class: "gce"
-    # For production, configure TLS and use HTTPS
-    # Recommended: Use cert-manager to automatically provision TLS certificates
 spec:
   rules:
-  - http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: eshop-service
-            port:
-              number: 80 
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: python-app-service
+                port:
+                  number: 80 

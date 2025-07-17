@@ -1,17 +1,19 @@
-variable "project_id" {}
-variable "region" { default = "us-central1" }
-variable "db_user" { default = "appuser" }
-variable "db_password" {
-  description = "The DB password"
-  sensitive   = true
+variable "project_id" {
+  description = "GCP project ID"
+  type        = string
 }
-variable "github_org" {}
-variable "github_repo" {}
-variable "artifact_repo_name" {
-  description = "Name of the Artifact Registry repository"
-  default     = "eshop-docker-repo"
+
+variable "region" {
+  description = "GCP region"
+  type        = string
 }
-variable "workload_identity_pool_id" {
-  description = "Name for the Workload Identity Pool"
-  default     = "eshop-github-pool"
+
+variable "gke_cluster_name" {
+  description = "Name of the GKE cluster"
+  type        = string
+}
+
+variable "gke_location" {
+  description = "Location (zone or region) for GKE cluster"
+  type        = string
 } 

@@ -6,3 +6,10 @@ metadata:
 data:
   FLASK_ENV: "production"
   # Add other non-secret env vars here 
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: python-app-config
+data:
+  ENV: "production" 

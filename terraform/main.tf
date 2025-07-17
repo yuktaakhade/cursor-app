@@ -1,50 +1,86 @@
+locals {
+  region     = var.region
+  project_id = var.project_id
+}
+
 module "vpc" {
-  source     = "./modules/vpc"
-  project_id = var.project_id
-  region     = var.region
-  labels     = {
-    environment = terraform.workspace
-    owner       = "eshop-team"
-  }
+  source = "./modules/vpc"
+  name   = "gke-network"
+  cidr   = "10.10.0.0/16"
+  region = local.region
 }
 
-module "sql" {
-  source        = "./modules/sql"
-  project_id    = var.project_id
-  region        = var.region
-  db_user       = var.db_user
-  db_password   = var.db_password
-  vpc_network   = module.vpc.network_name
-}
-
-module "artifact_registry" {
-  source     = "./modules/artifact_registry"
-  project_id = var.project_id
-  region     = var.region
-  repo_name  = var.artifact_repo_name
-}
-
-module "workload_identity" {
-  source      = "./modules/workload_identity"
-  project_id  = var.project_id
-  github_org  = var.github_org
-  github_repo = var.github_repo
-  workload_identity_pool_id = var.workload_identity_pool_id
-}
-
-module "service_account" {
-  source                 = "./modules/service_account"
-  project_id             = var.project_id
-  workload_identity_pool = module.workload_identity.eshop_github_pool_id
-  github_org             = var.github_org
-  github_repo            = var.github_repo
+module "iam" {
+  source       = "./modules/iam"
+  account_id   = "gke-sa"
+  display_name = "GKE Service Account"
+  roles        = [
+    "roles/container.admin",
+    "roles/compute.networkAdmin",
+    "roles/iam.serviceAccountUser"
+  ]
+  project_id = local.project_id
 }
 
 module "gke" {
-  source       = "./modules/gke"
-  project_id   = var.project_id
-  location     = var.region
-  network      = module.vpc.network_name
-  subnetwork   = module.vpc.subnet_name
-  cluster_name = "e-shopping-cluster"
+  source     = "./modules/gke"
+  name       = var.gke_cluster_name
+  location   = var.gke_location
+  network_id = module.vpc.network_id
+  subnet_id  = module.vpc.subnet_id
+  project_id = local.project_id
+}
+
+resource "google_project_service" "services" {
+  for_each = toset([
+    "container.googleapis.com",
+    "compute.googleapis.com",
+    "iam.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "artifactregistry.googleapis.com"
+  ])
+  service = each.key
+  disable_on_destroy = false
+}
+
+resource "google_artifact_registry_repository" "docker_repo" {
+  location      = local.region
+  repository_id = "gke-docker-repo"
+  format        = "DOCKER"
+  depends_on    = [google_project_service.services]
+}
+
+resource "google_service_account" "github_actions" {
+  account_id   = "github-actions-cicd"
+  display_name = "GitHub Actions CI/CD Service Account"
+}
+
+resource "google_project_iam_member" "github_actions_roles" {
+  for_each = toset([
+    "roles/artifactregistry.writer",
+    "roles/container.developer"
+  ])
+  project = local.project_id
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+output "gke_endpoint" {
+  value = module.gke.endpoint
+}
+
+output "gke_cluster_name" {
+  value = module.gke.name
+}
+
+output "gke_ca_certificate" {
+  value = module.gke.ca_certificate
+}
+
+output "artifact_registry_repo" {
+  value = google_artifact_registry_repository.docker_repo.repository_id
+}
+
+output "github_actions_service_account_email" {
+  value = google_service_account.github_actions.email
 } 

@@ -1,7 +1,11 @@
-project_id   = "yukta-2"
-region       = "us-central1"
-db_user      = "user1"
-db_password = "root"
-github_org   = "yuktaakhade"
-github_repo  = "e-shopping-python"
-artifact_repo_name = "e-shopping-docker-repo" 
+# Required GCP project ID
+project_id = "yukta-2"
+
+# GCP region (e.g., us-central1)
+region = "us-central1"
+
+# GKE cluster name
+gke_cluster_name = "gke-cluster"
+
+# GKE location (zone or region, e.g., us-central1)
+gke_location = "us-central1"

@@ -1,25 +1,19 @@
-resource "google_compute_network" "vpc_network" {
-  name                    = "eshop-vpc"
+resource "google_compute_network" "this" {
+  name                    = var.name
   auto_create_subnetworks = false
 }
 
-resource "google_compute_subnetwork" "subnet" {
-  name          = "eshop-subnet"
-  ip_cidr_range = "10.10.0.0/24"
+resource "google_compute_subnetwork" "this" {
+  name          = "${var.name}-subnet"
+  ip_cidr_range = var.cidr
   region        = var.region
-  network       = google_compute_network.vpc_network.id
+  network       = google_compute_network.this.id
 }
 
-resource "google_compute_global_address" "private_ip_range" {
-  name          = "private-ip-range"
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = 16
-  network       = google_compute_network.vpc_network.id
+output "network_id" {
+  value = google_compute_network.this.id
 }
 
-resource "google_service_networking_connection" "private_vpc_connection" {
-  network                 = google_compute_network.vpc_network.id
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.private_ip_range.name]
+output "subnet_id" {
+  value = google_compute_subnetwork.this.id
 } 

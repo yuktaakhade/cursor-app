@@ -1,25 +1,20 @@
-variable "project_id" {
-  description = "The GCP project ID"
+variable "name" {
   type        = string
+  description = "GKE cluster name"
 }
-
 variable "location" {
-  description = "The zone for the GKE cluster (e.g., us-central1-c)"
   type        = string
+  description = "GKE location"
 }
-
-variable "cluster_name" {
-  description = "The name of the GKE cluster"
+variable "network_id" {
   type        = string
-  default     = "e-shopping-cluster"
+  description = "VPC network ID"
 }
-
-variable "network" {
-  description = "The name of the VPC network to use"
+variable "subnet_id" {
   type        = string
+  description = "Subnet ID"
 }
-
-variable "subnetwork" {
-  description = "The name of the subnetwork to use"
+variable "project_id" {
   type        = string
+  description = "GCP project ID"
 } 
