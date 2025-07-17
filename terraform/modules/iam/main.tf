@@ -7,4 +7,5 @@ resource "google_project_iam_member" "gke_sa_roles" {
 
 output "service_account_email" {
   value = var.account_id
-} 
+
+}
