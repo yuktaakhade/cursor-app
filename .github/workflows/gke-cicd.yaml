@@ -1,9 +1,10 @@
 name: CI/CD to GKE
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Provision GCP Infra with Terraform"]
+    types:
+      - completed
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -44,17 +45,22 @@ jobs:
       with:
         workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
         service_account: '${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}'
+
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
+
     - name: Configure Docker for Artifact Registry
       run: |
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
+
     - name: Build Docker image
       run: |
         docker build -t $IMAGE_PATH .
+
     - name: Push Docker image
       run: |
         docker push $IMAGE_PATH
+
     - name: Wait for GKE cluster to be ready
       run: |
         for i in {1..10}; do
@@ -66,8 +72,10 @@ jobs:
             sleep 30
           fi
         done
+
     - name: Get GKE credentials
       run: gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_LOCATION
+      
     - name: Deploy to GKE
       run: |
         kubectl apply -f k8s/configmap.yaml
