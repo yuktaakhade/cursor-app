@@ -34,6 +34,13 @@ jobs:
         pip install -r requirements.txt
         pip install pybuilder
 
+    - name: Show key package versions
+      run: |
+        python --version
+        pip show Flask
+        pip show Werkzeug
+        pip show pybuilder
+
     - name: Clean PyBuilder target directory
       run: rm -rf target
 
