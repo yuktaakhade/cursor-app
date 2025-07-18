@@ -39,7 +39,16 @@ jobs:
 
     - name: Run tests and generate coverage report
       run: |
-        COVERAGE_NO_WARNINGS=1 pyb -v clean analyze run_unit_tests || { cat target/reports/coverage.xml || true; exit 1; }
+        set -o pipefail
+        COVERAGE_NO_WARNINGS=1 pyb clean analyze run_unit_tests 2>&1 | tee pyb.log
+        status=${PIPESTATUS[0]}
+        if [ $status -ne 0 ]; then
+          echo "==== PyBuilder log ===="
+          cat pyb.log
+          echo "==== Coverage report ===="
+          cat target/reports/coverage.xml || true
+          exit $status
+        fi
       # Shows coverage report on failure for easier debugging
 
     - name: Authenticate to Google Cloud
