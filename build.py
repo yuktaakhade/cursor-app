@@ -27,6 +27,8 @@ def set_properties(project):
     project.set_property('flake8_break_build', True)
     project.set_property('dir_source_unittest_python', '.')
     project.set_property('unittest_module_glob', 'test_*.py')
+    project.set_property('flake8_include_test_sources', True)
+    project.set_property('dir_source_main_python', '.')
 
 @task
 def run_tests(project, logger):
