@@ -68,7 +68,7 @@ jobs:
 
     - name: Upload coverage report
       if: always()
-      uses: actions/upload-artifact@v4u
+      uses: actions/upload-artifact@v4k
       with:
         name: coverage-report
         path: target/reports/coverage.xml
