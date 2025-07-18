@@ -7,6 +7,10 @@ bp = Blueprint('products', __name__)
 
 logger = logging.getLogger(__name__)
 
+@bp.route('/')
+def index():
+    return "Welcome to the Product API! Visit /products to see the product list."
+
 @bp.route('/products', methods=['GET'])
 def get_products():
     """Get all products."""

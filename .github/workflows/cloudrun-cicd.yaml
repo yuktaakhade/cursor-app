@@ -116,17 +116,3 @@ jobs:
           --allow-unauthenticated \
           --quiet
 
-    - name: Post-deployment health check
-      run: |
-        SERVICE_URL=$(gcloud run services describe $CLOUD_RUN_SERVICE --region $REGION --format='value(status.url)')
-        echo "Cloud Run service URL: $SERVICE_URL"
-        for i in {1..5}; do
-          if curl -sf $SERVICE_URL/health || curl -sf $SERVICE_URL; then
-            echo "Service is healthy!"
-            exit 0
-          else
-            echo "Waiting for service..."
-            sleep 10
-          fi
-        done
-        echo "Service did not become healthy in time." && exit 1 

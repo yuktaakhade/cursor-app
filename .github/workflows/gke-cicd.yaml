@@ -29,17 +29,51 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Run unit tests
-      run: python -m unittest test_app.py
-    - name: Check coverage
+        pip install pybuilder
+
+    - name: Show key package versions
       run: |
-        pip install coverage
-        coverage run --source=. -m unittest test_app.py
-        coverage report -m
+        python --version
+        pip show Flask
+        pip show Werkzeug
+        pip show pybuilder
+
+    - name: Clean PyBuilder target directory
+      run: rm -rf target
+
+    - name: Run tests and generate coverage report
+      run: |
+        set -o pipefail
+        COVERAGE_NO_WARNINGS=1 pyb clean analyze run_unit_tests 2>&1 | tee pyb.log
+        status=${PIPESTATUS[0]}
+        if [ $status -ne 0 ]; then
+          echo "==== PyBuilder log ===="
+          cat pyb.log
+          echo "==== Coverage report ===="
+          cat target/reports/coverage.xml || true
+          exit $status
+        fi
+      # Shows coverage report on failure for easier debugging
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: target/reports/coverage.xml
+
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
