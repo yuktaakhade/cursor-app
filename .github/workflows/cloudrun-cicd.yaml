@@ -37,10 +37,10 @@ jobs:
     - name: Clean PyBuilder target directory
       run: rm -rf target
 
-    - name: Run tests and generate coverage report (YAML)
+    - name: Run tests and generate coverage report
       run: |
-        pyb -v clean analyze run_unit_tests
-        # The YAML report will be in target/reports/coverage.yaml
+        pyb -v clean analyze run_unit_tests || { cat target/reports/coverage.xml || true; exit 1; }
+      # Shows coverage report on failure for easier debugging
 
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
