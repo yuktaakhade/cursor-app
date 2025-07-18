@@ -99,7 +99,6 @@ jobs:
         image-ref: ${{ env.IMAGE_PATH }}
         format: 'table'
         exit-code: '0'
-        ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'HIGH,CRITICAL'
 

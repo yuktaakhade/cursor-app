@@ -21,4 +21,5 @@ def create_app() -> Flask:
 if __name__ == '__main__':
     app = create_app()
     debug_mode = os.getenv('FLASK_DEBUG', 'True') == 'True'
-    app.run(debug=debug_mode) 
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=debug_mode) 

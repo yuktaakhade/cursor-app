@@ -22,9 +22,9 @@ USER appuser
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
-EXPOSE 5000
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:5000/ || exit 1
+  CMD curl -f http://localhost:8080/ || exit 1
 
-CMD ["flask", "run"] 
+CMD ["python", "app.py"] 
