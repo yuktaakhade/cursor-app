@@ -22,7 +22,7 @@ def set_properties(project):
     project.set_property('pytest_coverage_xml', True)
     project.set_property('pytest_coverage_html', False)
     project.set_property('pytest_coverage_annotate', False)
-    project.set_property('pytest_extra_args', ['--cov-report', 'yaml'])
+    project.set_property('pytest_extra_args', ['--cov-report', 'xml'])
     project.set_property('coverage_break_build', False)
     project.set_property('flake8_break_build', True)
     project.set_property('dir_source_unittest_python', '.')
