@@ -39,7 +39,7 @@ jobs:
 
     - name: Run tests and generate coverage report
       run: |
-        pyb -v clean analyze run_unit_tests || { cat target/reports/coverage.xml || true; exit 1; }
+        COVERAGE_NO_WARNINGS=1 pyb -v clean analyze run_unit_tests || { cat target/reports/coverage.xml || true; exit 1; }
       # Shows coverage report on failure for easier debugging
 
     - name: Authenticate to Google Cloud
