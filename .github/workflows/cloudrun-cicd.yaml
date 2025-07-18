@@ -36,7 +36,7 @@ jobs:
 
     - name: Run tests and generate coverage report (YAML)
       run: |
-        pyb clean analyze pytest
+        pyb clean analyze run_unit_tests
         # The YAML report will be in target/reports/coverage.yaml
 
     - name: Authenticate to Google Cloud
