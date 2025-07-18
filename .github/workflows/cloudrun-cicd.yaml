@@ -28,6 +28,9 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Upgrade virtualenv to fix CVE-2024-53899
+      run: pip install --upgrade virtualenv
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
