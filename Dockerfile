@@ -1,4 +1,4 @@
-update# Build stage (if you had build steps, e.g., for compiled dependencies)
+# Build stage (if you had build steps, e.g., for compiled dependencies)
 FROM python:3.11-slim as base
 WORKDIR /app
 COPY requirements.txt ./
