@@ -34,6 +34,9 @@ jobs:
         pip install -r requirements.txt
         pip install pybuilder
 
+    - name: Clean PyBuilder target directory
+      run: rm -rf target
+
     - name: Run tests and generate coverage report (YAML)
       run: |
         pyb -v clean analyze run_unit_tests
