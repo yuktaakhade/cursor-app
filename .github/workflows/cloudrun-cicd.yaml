@@ -37,6 +37,14 @@ jobs:
     - name: Clean PyBuilder target directory
       run: rm -rf target
 
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
     - name: Run tests and generate coverage report
       run: |
         set -o pipefail
@@ -50,6 +58,13 @@ jobs:
           exit $status
         fi
       # Shows coverage report on failure for easier debugging
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: target/reports/coverage.xml
 
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
