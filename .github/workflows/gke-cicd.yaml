@@ -5,6 +5,8 @@ on:
     workflows: ["Provision GCP Infra with Terraform"]
     types:
       - completed
+#  push:
+#    branches: [main]
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
