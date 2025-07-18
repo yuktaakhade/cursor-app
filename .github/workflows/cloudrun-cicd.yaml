@@ -40,6 +40,7 @@ jobs:
     - name: Run tests and generate coverage report
       run: |
         set -o pipefail
+        export PYTHONWARNINGS="ignore::coverage.CoverageWarning"
         COVERAGE_NO_WARNINGS=1 pyb clean analyze run_unit_tests 2>&1 | tee pyb.log
         status=${PIPESTATUS[0]}
         if [ $status -ne 0 ]; then
