@@ -1,4 +1,4 @@
-# Build stage (if you had build steps, e.g., for compiled dependencies)
+update# Build stage (if you had build steps, e.g., for compiled dependencies)
 FROM python:3.11-slim as base
 WORKDIR /app
 COPY requirements.txt ./
@@ -9,7 +9,11 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY --from=base /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=base /usr/local/bin /usr/local/bin
+# Defensive: Remove any creds that might have slipped in
+RUN rm -f gha-creds-*.json
 COPY . .
+# Defensive: Remove again after copy (if needed)
+RUN rm -f gha-creds-*.json
 
 # Add a non-root user for security
 RUN useradd -m appuser && chown -R appuser /app
