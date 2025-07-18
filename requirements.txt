@@ -8,7 +8,7 @@ virtualenv>=20.26.6
 # Development dependencies (install separately or use requirements-dev.txt):
 coverage==7.2.7
 flake8==6.1.0
-pybuilder==0.13.12 
-pybuilder_pytest
-pybuilder_pytest_coverage
+pybuilder==0.13.12
+pybuilder-pytest
+pybuilder-pytest-coverage
 pyyaml 
