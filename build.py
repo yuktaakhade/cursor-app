@@ -1,9 +1,10 @@
 from pybuilder.core import use_plugin, init, task
 
 use_plugin('python.core')
-use_plugin('python.unittest')
+use_plugin('pypi:pybuilder_pytest')
+use_plugin('pypi:pybuilder_pytest_coverage')
 use_plugin('python.flake8')
-use_plugin('python.coverage')
+# use_plugin('python.coverage')
 
 name = 'e-shopping-python'
 default_task = ['clean', 'analyze', 'publish']
@@ -14,7 +15,14 @@ def set_properties(project):
     project.build_depends_on('Flask-SQLAlchemy')
     project.build_depends_on('coverage')
     project.build_depends_on('flake8')
-    project.build_depends_on('unittest')
+    project.build_depends_on('pytest')
+    project.build_depends_on('pytest-cov')
+    project.build_depends_on('pyyaml')
+    project.set_property('pytest_coverage_break_build_threshold', 0)
+    project.set_property('pytest_coverage_xml', True)
+    project.set_property('pytest_coverage_html', False)
+    project.set_property('pytest_coverage_annotate', False)
+    project.set_property('pytest_extra_args', ['--cov-report', 'yaml'])
     project.set_property('coverage_break_build', False)
     project.set_property('flake8_break_build', True)
     project.set_property('dir_source_unittest_python', '.')

@@ -1,0 +1,94 @@
+name: CI/CD to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GAR_LOCATION: us-central1
+  REPOSITORY: gke-docker-repo
+  IMAGE: python-app
+  IMAGE_PATH: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gke-docker-repo/python-app:latest
+  CLOUD_RUN_SERVICE: python-app
+  REGION: us-central1
+
+jobs:
+  test-build-scan-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pybuilder
+
+    - name: Run tests and generate coverage report (YAML)
+      run: |
+        pyb clean analyze run_pytest
+        # The YAML report will be in target/reports/coverage.yaml
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
+        service_account: '${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}'
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Configure Docker for Artifact Registry
+      run: |
+        gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
+
+    - name: Build Docker image
+      run: |
+        docker build -t $IMAGE_PATH .
+
+    - name: Scan Docker image for vulnerabilities (Trivy)
+      uses: aquasecurity/trivy-action@0.32.0
+      with:
+        image-ref: ${{ env.IMAGE_PATH }}
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+
+    - name: Push Docker image
+      run: |
+        docker push $IMAGE_PATH
+
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy $CLOUD_RUN_SERVICE \
+          --image $IMAGE_PATH \
+          --region $REGION \
+          --platform managed \
+          --allow-unauthenticated \
+          --quiet
+
+    - name: Post-deployment health check
+      run: |
+        SERVICE_URL=$(gcloud run services describe $CLOUD_RUN_SERVICE --region $REGION --format='value(status.url)')
+        echo "Cloud Run service URL: $SERVICE_URL"
+        for i in {1..5}; do
+          if curl -sf $SERVICE_URL/health || curl -sf $SERVICE_URL; then
+            echo "Service is healthy!"
+            exit 0
+          else
+            echo "Waiting for service..."
+            sleep 10
+          fi
+        done
+        echo "Service did not become healthy in time." && exit 1 

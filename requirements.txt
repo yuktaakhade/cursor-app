@@ -7,3 +7,6 @@ Werkzeug<3.0.0
 coverage==7.2.7
 flake8==6.1.0
 pybuilder==0.13.12 
+pybuilder_pytest
+pybuilder_pytest_coverage
+pyyaml 
